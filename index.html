@@ -5,11 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DSU Marks Card Flow</title>
   <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --accent-color: #e74c3c;
+      --light-color: #ecf0f1;
+      --success-color: #27ae60;
+      --warning-color: #f39c12;
+    }
+    
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       padding: 20px;
       max-width: 900px;
       margin: auto;
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
     }
     .hidden {
       display: none;
@@ -18,44 +30,183 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.1);
     }
-    table,
-    th,
-    td {
-      border: 1px solid #000;
+    table, th, td {
+      border: 1px solid #ddd;
     }
-    th,
-    td {
+    th, td {
       text-align: center;
-      padding: 8px;
+      padding: 10px;
     }
     th {
-      background-color: #f2f2f2;
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 500;
     }
+    tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    
     input[type="text"],
     input[type="number"],
     select {
       margin-bottom: 10px;
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       box-sizing: border-box;
       font-size: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      transition: border 0.3s;
     }
+    
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+      border-color: var(--secondary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+    
     label {
       display: block;
       margin-top: 15px;
-      font-weight: bold;
+      font-weight: 600;
+      color: var(--primary-color);
     }
+    
     button {
       margin-top: 15px;
       padding: 10px 20px;
       font-size: 1rem;
       cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      transition: all 0.3s;
+      font-weight: 500;
     }
+    
+    .btn-primary {
+      background-color: var(--secondary-color);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #2980b9;
+    }
+    
+    .btn-secondary {
+      background-color: #95a5a6;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #7f8c8d;
+    }
+    
     .error {
-      color: red;
+      color: var(--accent-color);
       margin-top: 10px;
       font-weight: bold;
+      padding: 10px;
+      background-color: #fadbd8;
+      border-radius: 4px;
+      border-left: 4px solid var(--accent-color);
+    }
+    
+    .success {
+      color: var(--success-color);
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    
+    /* Page specific styles */
+    #page1 {
+      background-color: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    #page1 h2 {
+      color: var(--primary-color);
+      border-bottom: 2px solid var(--secondary-color);
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    
+    #page2 {
+      background-color: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    #page2 h2 {
+      color: var(--primary-color);
+      border-bottom: 2px solid var(--secondary-color);
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    
+    #page3 {
+      background-color: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    #page3 h2 {
+      color: var(--primary-color);
+      border-bottom: 2px solid var(--secondary-color);
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+    
+    /* Grade colors */
+    .grade-O { color: #27ae60; font-weight: bold; }
+    .grade-Aplus { color: #2ecc71; font-weight: bold; }
+    .grade-A { color: #3498db; font-weight: bold; }
+    .grade-Bplus { color: #f39c12; font-weight: bold; }
+    .grade-B { color: #e67e22; font-weight: bold; }
+    .grade-C { color: #d35400; font-weight: bold; }
+    .grade-P { color: #34495e; font-weight: bold; }
+    .grade-F { color: #e74c3c; font-weight: bold; }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      table {
+        font-size: 0.9rem;
+      }
+      
+      th, td {
+        padding: 6px;
+      }
+    }
+    
+    /* Tooltip for USN */
+    small {
+      color: #7f8c8d;
+      font-size: 0.8rem;
+      font-weight: normal;
+    }
+    
+    /* Highlight totals */
+    tr:last-child {
+      background-color: #e8f4f8 !important;
+      font-weight: bold;
+    }
+    
+    tr:last-child:hover {
+      background-color: #d4e6f1 !important;
     }
   </style>
 </head>
@@ -86,7 +237,7 @@
       <option value="CSE CORE">CSE CORE</option>
     </select>
     <div id="page1Error" class="error"></div>
-    <button onclick="goToPage2()">Next</button>
+    <button class="btn-primary" onclick="goToPage2()">Next</button>
   </div>
 
   <div id="page2" class="hidden">
@@ -105,15 +256,15 @@
         <tbody id="inputRows"></tbody>
       </table>
       <div id="page2Error" class="error"></div>
-      <button type="button" onclick="goToPage3()">Calculate & Show Result</button>
-      <button type="button" onclick="backToPage1()" style="margin-left: 12px;">Back</button>
+      <button type="button" class="btn-primary" onclick="goToPage3()">Calculate & Show Result</button>
+      <button type="button" class="btn-secondary" onclick="backToPage1()" style="margin-left: 12px;">Back</button>
     </form>
   </div>
 
   <div id="page3" class="hidden">
     <h2>Results for <span id="displayName"></span> (<span id="displayUSN"></span>)</h2>
     <div id="result"></div>
-    <button onclick="backToPage2()">Back</button>
+    <button class="btn-secondary" onclick="backToPage2()">Back</button>
   </div>
 
 </div>
@@ -202,14 +353,14 @@
   }
 
   function GPoints(marks) {
-    if (marks >= 90) return {gp:10, grade:"O"};
-    if (marks >= 80) return {gp:9, grade:"A+"};
-    if (marks >= 70) return {gp:8, grade:"A"};
-    if (marks >= 60) return {gp:7, grade:"B+"};
-    if (marks >= 50) return {gp:6, grade:"B"};
-    if (marks >= 45) return {gp:5, grade:"C"};
-    if (marks >= 40) return {gp:4, grade:"P"};
-    return {gp:0, grade:"F"};
+    if (marks >= 90) return {gp:10, grade:"O", class: "grade-O"};
+    if (marks >= 80) return {gp:9, grade:"A+", class: "grade-Aplus"};
+    if (marks >= 70) return {gp:8, grade:"A", class: "grade-A"};
+    if (marks >= 60) return {gp:7, grade:"B+", class: "grade-Bplus"};
+    if (marks >= 50) return {gp:6, grade:"B", class: "grade-B"};
+    if (marks >= 45) return {gp:5, grade:"C", class: "grade-C"};
+    if (marks >= 40) return {gp:4, grade:"P", class: "grade-P"};
+    return {gp:0, grade:"F", class: "grade-F"};
   }
 
   function goToPage3() {
@@ -292,7 +443,7 @@
         GT = ia + mseavg + (see * 0.4);
       }
 
-      const {gp, grade} = GPoints(GT);
+      const {gp, grade, class: gradeClass} = GPoints(GT);
       const creditPoints = gp * course.credits;
       totalCreditPoints += creditPoints;
       totalCredits += course.credits;
@@ -306,17 +457,24 @@
         <td>${course.iaOnly ? "-" : see.toFixed(2)}</td>
         <td>${GT.toFixed(2)}</td>
         <td>${gp}</td>
-        <td>${grade}</td>
+        <td class="${gradeClass}">${grade}</td>
         <td>${course.credits}</td>
         <td>${creditPoints.toFixed(2)}</td>
       </tr>`;
     }
 
+    const sgpa = (totalCreditPoints / totalCredits).toFixed(2);
+    
     output += `<tr>
       <td colspan="9" style="text-align:right"><strong>Total</strong></td>
       <td><strong>${totalCredits}</strong></td>
       <td><strong>${totalCreditPoints.toFixed(2)}</strong></td>
-    </tr></tbody></table>`;
+    </tr>
+    <tr style="background-color: #e8f8f5 !important;">
+      <td colspan="10" style="text-align:right"><strong>SGPA</strong></td>
+      <td><strong>${sgpa}</strong></td>
+    </tr>
+    </tbody></table>`;
 
     document.getElementById("displayName").textContent = name;
     document.getElementById("displayUSN").textContent = usn;
