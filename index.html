@@ -96,8 +96,8 @@
         <thead>
           <tr>
             <th>Course</th>
-            <th>MSE 1 (out of 100)</th>
-            <th>MSE 2 (out of 100)</th>
+            <th>MSE 1 (out of 40)</th>
+            <th>MSE 2 (out of 40)</th>
             <th>IA (max varies)</th>
             <th>SEE (out of 100)</th>
           </tr>
@@ -127,17 +127,31 @@
     { name: "SMC", credits: 3, iaMax: 20, mseWeight: "avg" }, // special case
     { name: "CPPS", credits: 4, iaMax: 30, mseWeight: 0.375 },
     { name: "ENG", credits: 2, iaMax: 100, mseWeight: 0, iaOnly: true },
-    { name: "CIA", credits: 2, iaMax: 50, mseWeight: 0, iaOnly: true }
+    { name: "CIA", credits: 2, iaMax: 100, mseWeight: 0, iaOnly: true }
   ];
 
+  // Store current values when navigating to page 3
+  let currentValues = {};
+
   function createInputRow(course) {
+    // Check if we have stored values for this course
+    const storedValues = currentValues[course.name] || {};
+    
     return `
       <tr>
         <td>${course.name}</td>
-        <td><input type="number" min="0" max="100" step="0.01" id="${course.name}_mse1" required ${course.iaOnly ? 'disabled' : ''}></td>
-        <td><input type="number" min="0" max="100" step="0.01" id="${course.name}_mse2" required ${course.iaOnly ? 'disabled' : ''}></td>
-        <td><input type="number" min="0" max="${course.iaMax}" step="0.01" id="${course.name}_ia" required></td>
-        <td><input type="number" min="0" max="100" step="0.01" id="${course.name}_see" required ${course.iaOnly ? 'disabled' : ''}></td>
+        <td><input type="number" min="0" max="${course.iaOnly ? 0 : 40}" step="0.01" 
+            id="${course.name}_mse1" required ${course.iaOnly ? 'disabled' : ''}
+            value="${storedValues.mse1 || ''}"></td>
+        <td><input type="number" min="0" max="${course.iaOnly ? 0 : 40}" step="0.01" 
+            id="${course.name}_mse2" required ${course.iaOnly ? 'disabled' : ''}
+            value="${storedValues.mse2 || ''}"></td>
+        <td><input type="number" min="0" max="${course.iaMax}" step="0.01" 
+            id="${course.name}_ia" required
+            value="${storedValues.ia || ''}"></td>
+        <td><input type="number" min="0" max="100" step="0.01" 
+            id="${course.name}_see" required ${course.iaOnly ? 'disabled' : ''}
+            value="${storedValues.see || ''}"></td>
       </tr>
     `;
   }
@@ -148,9 +162,15 @@
     tbody.innerHTML = courses.map(createInputRow).join("");
   }
 
+  function validateUSN(usn) {
+    // USN format: ENG24XX0000 (11 characters)
+    const usnPattern = /^ENG24[A-Z]{2}\d{4}$/;
+    return usnPattern.test(usn);
+  }
+
   function goToPage2() {
     const name = document.getElementById("studentName").value.trim();
-    const usn = document.getElementById("studentUSN").value.trim();
+    const usn = document.getElementById("studentUSN").value.trim().toUpperCase();
     const errorDiv = document.getElementById("page1Error");
     if (!name) {
       errorDiv.textContent = "Name is required.";
@@ -158,6 +178,10 @@
     }
     if (!usn) {
       errorDiv.textContent = "USN is required.";
+      return;
+    }
+    if (!validateUSN(usn)) {
+      errorDiv.textContent = "USN must be in format ENG24XX0000 (first 5 fixed, next 2 letters, last 4 digits)";
       return;
     }
     errorDiv.textContent = "";
@@ -189,6 +213,17 @@
   }
 
   function goToPage3() {
+    // Store all current values before validation
+    currentValues = {};
+    for (const c of courses) {
+      currentValues[c.name] = {
+        mse1: document.getElementById(`${c.name}_mse1`).value,
+        mse2: document.getElementById(`${c.name}_mse2`).value,
+        ia: document.getElementById(`${c.name}_ia`).value,
+        see: document.getElementById(`${c.name}_see`).value
+      };
+    }
+
     // Validate inputs
     const errorDiv = document.getElementById("page2Error");
     errorDiv.textContent = "";
@@ -197,14 +232,27 @@
         const mse1 = document.getElementById(`${c.name}_mse1`).value;
         const mse2 = document.getElementById(`${c.name}_mse2`).value;
         const see = document.getElementById(`${c.name}_see`).value;
+        
         if (mse1 === "" || mse2 === "" || see === "") {
           errorDiv.textContent = `Please fill all MSE1, MSE2, and SEE for ${c.name}`;
+          return;
+        }
+        if (parseFloat(mse1) > 40 || parseFloat(mse2) > 40) {
+          errorDiv.textContent = `MSE marks for ${c.name} cannot exceed 40`;
+          return;
+        }
+        if (parseFloat(see) > 100) {
+          errorDiv.textContent = `SEE marks for ${c.name} cannot exceed 100`;
           return;
         }
       }
       const ia = document.getElementById(`${c.name}_ia`).value;
       if (ia === "") {
         errorDiv.textContent = `Please fill IA for ${c.name}`;
+        return;
+      }
+      if (parseFloat(ia) > c.iaMax) {
+        errorDiv.textContent = `IA marks for ${c.name} cannot exceed ${c.iaMax}`;
         return;
       }
     }
