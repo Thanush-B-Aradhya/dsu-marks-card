@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DSU Marks Card Generator</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <title>DSU Marks Card - Web View</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -15,7 +14,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 20px;
+      margin-top: 20px;
     }
     table, th, td {
       border: 1px solid #000;
@@ -27,189 +26,35 @@
     th {
       background-color: #f2f2f2;
     }
-    input[type="number"], input[type="text"] {
-      width: 100px;
-    }
-    .info, .marks-section {
-      margin-bottom: 20px;
-    }
-    .hidden {
-      display: none;
-    }
   </style>
 </head>
 <body>
-  <h2>DSU Style Marks Card Generator</h2>
+  <h2>DSU Marks Card - Web View</h2>
 
-  <div class="info">
-    <label>Name: <input type="text" id="studentName"></label>
-    <label>USN: <input type="text" id="usn"></label>
-    <button onclick="showMarksSection()">Next</button>
-  </div>
-
-  <div class="marks-section hidden">
-    <form id="marksForm">
-      <table>
-        <thead>
-          <tr>
-            <th>Course</th>
-            <th>MSE1</th>
-            <th>MSE2</th>
-            <th>IA</th>
-            <th>SEE</th>
-          </tr>
-        </thead>
-        <tbody id="courseTable">
-          <tr data-course="ENGINEERING CHEMISTRY" data-credit="3">
-            <td>ENGINEERING CHEMISTRY</td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-          </tr>
-          <tr data-course="MECHANICAL ENGINEERING" data-credit="3">
-            <td>MECHANICAL ENGINEERING</td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-          </tr>
-          <tr data-course="ELECTRICAL ENGINEERING" data-credit="2">
-            <td>ELECTRICAL ENGINEERING</td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-          </tr>
-          <tr data-course="ENGINEERING MECHANICS" data-credit="2">
-            <td>ENGINEERING MECHANICS</td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-          </tr>
-          <tr data-course="SM CALCULUS" data-credit="3">
-            <td>SM CALCULUS</td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-          </tr>
-          <tr data-course="C PROGRAMMING" data-credit="4">
-            <td>C PROGRAMMING</td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-            <td><input type="number"></td>
-          </tr>
-          <tr data-course="ENGLISH" data-credit="2">
-            <td>ENGLISH</td>
-            <td>–</td>
-            <td>–</td>
-            <td><input type="number" value="0"></td>
-            <td><input type="number"></td>
-          </tr>
-          <tr data-course="CIA" data-credit="2">
-            <td>CIA</td>
-            <td>–</td>
-            <td>–</td>
-            <td><input type="number" value="0"></td>
-            <td><input type="number"></td>
-          </tr>
-        </tbody>
-      </table>
-      <button type="button" onclick="generatePDF()">Generate PDF</button>
-    </form>
-  </div>
-
-  <script>
-    function showMarksSection() {
-      const name = document.getElementById("studentName").value;
-      const usn = document.getElementById("usn").value;
-      if (!name || !usn) {
-        alert("Please enter both Name and USN.");
-        return;
-      }
-      document.querySelector('.info').classList.add('hidden');
-      document.querySelector('.marks-section').classList.remove('hidden');
-    }
-
-    function getGradePoints(gt) {
-      if (gt >= 90) return [10, "O"];
-      if (gt >= 80) return [9, "A+"];
-      if (gt >= 70) return [8, "A"];
-      if (gt >= 60) return [7, "B+"];
-      if (gt >= 50) return [6, "B"];
-      if (gt >= 45) return [5, "C"];
-      if (gt >= 40) return [4, "P"];
-      return [0, "F"];
-    }
-
-    async function generatePDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-
-      const studentName = document.getElementById("studentName").value;
-      const usn = document.getElementById("usn").value;
-
-      doc.setFontSize(14);
-      doc.text("Bachelor of Technology", 105, 10, { align: "center" });
-      doc.setFontSize(12);
-      doc.text(`Name: ${studentName}    USN: ${usn}`, 10, 20);
-      doc.text("Branch: CSE (AI & ML)", 10, 27);
-
-      let y = 40;
-      doc.setFontSize(10);
-      doc.text("Sl.", 10, y);
-      doc.text("Course Title", 20, y);
-      doc.text("Credit", 100, y);
-      doc.text("Grade", 120, y);
-      doc.text("G.P.", 140, y);
-      doc.text("C.P.", 160, y);
-
-      let rows = document.querySelectorAll("#courseTable tr");
-      let totalCredits = 0;
-      let totalPoints = 0;
-
-      rows.forEach((row, i) => {
-        const inputs = row.querySelectorAll("input");
-        const course = row.getAttribute("data-course");
-        const credit = parseFloat(row.getAttribute("data-credit"));
-
-        const m1 = inputs[0] ? parseFloat(inputs[0].value || 0) : 0;
-        const m2 = inputs[1] ? parseFloat(inputs[1].value || 0) : 0;
-        const ia = parseFloat(inputs[2].value || 0);
-        const see = parseFloat(inputs[3].value || 0);
-
-        const mse_avg = ((m1 + m2) / 2) * 0.4;
-        const final_ia = mse_avg + ia;
-        const see_final = see * 0.4;
-        const gt = +(final_ia + see_final).toFixed(1);
-
-        const [gp, grade] = getGradePoints(gt);
-        const cp = gp * credit;
-
-        totalCredits += credit;
-        totalPoints += cp;
-
-        y += 8;
-        doc.text(String(i + 1), 10, y);
-        doc.text(course.substring(0, 30), 20, y);
-        doc.text(String(credit), 100, y);
-        doc.text(grade, 120, y);
-        doc.text(String(gp), 140, y);
-        doc.text(cp.toFixed(2), 160, y);
-      });
-
-      y += 10;
-      doc.text("Total Credits: " + totalCredits, 10, y);
-      y += 7;
-      doc.text("Total Credit Points: " + totalPoints.toFixed(2), 10, y);
-      y += 7;
-      doc.text("SGPA: " + (totalPoints / totalCredits).toFixed(2), 10, y);
-
-      doc.save(`${studentName}_Marks_Card.pdf`);
-    }
-  </script>
+  <table>
+    <thead>
+      <tr>
+        <th>Sl. No.</th>
+        <th>Course Title</th>
+        <th>Credit</th>
+        <th>Grade</th>
+        <th>Grade Point</th>
+        <th>Credit Points</th>
+        <th>GT</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>ENGINEERING CHEMISTRY</td><td>3</td><td>B+</td><td>7</td><td>21.0</td><td>60.8</td></tr>
+      <tr><td>2</td><td>MECHANICAL ENGINEERING</td><td>3</td><td>A</td><td>8</td><td>24.0</td><td>70.9</td></tr>
+      <tr><td>3</td><td>ELECTRICAL ENGINEERING</td><td>2</td><td>A</td><td>8</td><td>16.0</td><td>73.0</td></tr>
+      <tr><td>4</td><td>ENGINEERING MECHANICS</td><td>2</td><td>C</td><td>5</td><td>10.0</td><td>50.4</td></tr>
+      <tr><td>5</td><td>SM CALCULUS</td><td>3</td><td>A</td><td>8</td><td>24.0</td><td>70.8</td></tr>
+      <tr><td>6</td><td>C PROGRAMMING</td><td>4</td><td>O</td><td>10</td><td>40.0</td><td>85.8</td></tr>
+      <tr><td>7</td><td>ENGLISH</td><td>2</td><td>O</td><td>10</td><td>20.0</td><td>100</td></tr>
+      <tr><td>8</td><td>CIA</td><td>2</td><td>A+</td><td>9</td><td>18.0</td><td>95</td></tr>
+      <tr><td></td><td><strong>TOTAL</strong></td><td>21</td><td></td><td></td><td>173.0</td><td></td></tr>
+      <tr><td></td><td><strong>SGPA</strong></td><td></td><td></td><td></td><td>8.24</td><td></td></tr>
+    </tbody>
+  </table>
 </body>
 </html>
