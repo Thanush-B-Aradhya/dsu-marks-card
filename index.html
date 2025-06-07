@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DSU Styled Marks Card</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body style="font-family: Arial; max-width: 900px; margin: auto; padding: 20px;">
+  <h2>DSU Marks Card Generator</h2>
+
+  <label>Name: <input type="text" id="studentName" value="THANUSH B ARADHYA"></label><br><br>
+  <label>USN: <input type="text" id="usn" value="ENG24AM0306"></label><br><br>
+
+  <button onclick="generatePDF()">Generate Styled PDF</button>
+
+  <script>
+    async function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      const logo = await fetch("logo_white.png").then(r => r.blob()).then(b => createImageBitmap(b));
+      const avatar = await fetch("avatar.png").then(r => r.blob()).then(b => createImageBitmap(b));
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 210; canvas.height = 297;
+      const ctx = canvas.getContext("2d");
+
+      // Draw background
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, 210, 297);
+
+      // Logo
+      ctx.drawImage(logo, 10, 10, 40, 40);
+      ctx.fillStyle = "#000";
+      ctx.font = "bold 14px Arial";
+      ctx.fillText("DAYANANDA SAGAR UNIVERSITY", 55, 25);
+      ctx.font = "12px Arial";
+      ctx.fillText("Bengaluru, India", 55, 40);
+
+      // Avatar
+      ctx.drawImage(avatar, 160, 10, 30, 30);
+
+      const name = document.getElementById("studentName").value;
+      const usn = document.getElementById("usn").value;
+
+      // Student Info
+      ctx.fillStyle = "#000";
+      ctx.font = "12px Arial";
+      ctx.fillText(`Name: ${name}`, 10, 60);
+      ctx.fillText(`USN: ${usn}`, 10, 70);
+      ctx.fillText(`Branch: CSE (AI & ML)`, 10, 80);
+
+      // Table Headers
+      ctx.fillStyle = "#ddd";
+      ctx.fillRect(10, 90, 190, 10);
+      ctx.fillStyle = "#000";
+      ctx.font = "bold 10px Arial";
+      ctx.fillText("Sl.", 12, 98);
+      ctx.fillText("Course Title", 25, 98);
+      ctx.fillText("Credit", 110, 98);
+      ctx.fillText("Grade", 130, 98);
+      ctx.fillText("G.P.", 150, 98);
+      ctx.fillText("C.P.", 170, 98);
+
+      // Sample table data
+      const courses = [
+        ["ENGINEERING CHEMISTRY", 3, "B+", 7, 21.0],
+        ["MECHANICAL ENGINEERING", 3, "A", 8, 24.0],
+        ["ELECTRICAL ENGINEERING", 2, "A", 8, 16.0],
+        ["ENGINEERING MECHANICS", 2, "C", 5, 10.0],
+        ["SM CALCULUS", 3, "A", 8, 24.0],
+        ["C PROGRAMMING", 4, "O", 10, 40.0],
+        ["ENGLISH", 2, "O", 10, 20.0],
+        ["CIA", 2, "A+", 9, 18.0]
+      ];
+
+      let y = 108;
+      ctx.font = "10px Arial";
+      let totalCredits = 0, totalPoints = 0;
+
+      courses.forEach((course, i) => {
+        const [title, credit, grade, gp, cp] = course;
+        ctx.fillStyle = "#000";
+        ctx.fillText(String(i + 1), 12, y);
+        ctx.fillText(title.substring(0, 28), 25, y);
+        ctx.fillText(String(credit), 110, y);
+        ctx.fillText(grade, 130, y);
+        ctx.fillText(String(gp), 150, y);
+        ctx.fillText(cp.toFixed(2), 170, y);
+        totalCredits += credit;
+        totalPoints += cp;
+        y += 8;
+      });
+
+      ctx.font = "bold 10px Arial";
+      ctx.fillText("TOTAL", 25, y + 5);
+      ctx.fillText(String(totalCredits), 110, y + 5);
+      ctx.fillText(totalPoints.toFixed(2), 170, y + 5);
+
+      ctx.fillText(`SGPA: ${(totalPoints / totalCredits).toFixed(2)}`, 25, y + 15);
+
+      // Convert canvas to PDF
+      const imgData = canvas.toDataURL("image/png");
+      doc.addImage(imgData, "PNG", 0, 0, 210, 297);
+      doc.save(`${name}_DSU_Marksheet.pdf`);
+    }
+  </script>
+</body>
+</html>
