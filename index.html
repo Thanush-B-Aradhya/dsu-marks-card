@@ -267,262 +267,247 @@
     <button class="btn-secondary" onclick="backToPage2()">Back</button>
   </div>
 
-</div>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
-<script>
-  const courses = [
-    { name: "CHEM", credits: 3, iaMax: 30, mseWeight: 0.375 },
-    { name: "IME", credits: 3, iaMax: 30, mseWeight: 0.375 },
-    { name: "EE", credits: 2, iaMax: 20, mseWeight: 0.5 },
-    { name: "EM", credits: 2, iaMax: 20, mseWeight: 0.5 },
-    { name: "SMC", credits: 3, iaMax: 20, mseWeight: "avg" }, // special case
-    { name: "CPPS", credits: 4, iaMax: 30, mseWeight: 0.375 },
-    { name: "ENG", credits: 2, iaMax: 100, mseWeight: 0, iaOnly: true },
-    { name: "CIA", credits: 2, iaMax: 100, mseWeight: 0, iaOnly: true }
-  ];
-
-  // Store current values when navigating to page 3
-  let currentValues = {};
-
-  function createInputRow(course) {
-    // Check if we have stored values for this course
-    const storedValues = currentValues[course.name] || {};
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCCnGNkRUIb_pahbp2LO2vVPixOZVyIuBo",
+      authDomain: "dsu-marks-card-872d7.firebaseapp.com",
+      projectId: "dsu-marks-card-872d7",
+      storageBucket: "dsu-marks-card-872d7.appspot.com",
+      messagingSenderId: "90241910615",
+      appId: "1:90241910615:web:cfb4d75b57375f2f8aa012"
+    };
     
-    return `
-      <tr>
-        <td>${course.name}</td>
-        <td><input type="number" min="0" max="${course.iaOnly ? 0 : 40}" step="0.01" 
-            id="${course.name}_mse1" required ${course.iaOnly ? 'disabled' : ''}
-            value="${storedValues.mse1 || ''}"></td>
-        <td><input type="number" min="0" max="${course.iaOnly ? 0 : 40}" step="0.01" 
-            id="${course.name}_mse2" required ${course.iaOnly ? 'disabled' : ''}
-            value="${storedValues.mse2 || ''}"></td>
-        <td><input type="number" min="0" max="${course.iaMax}" step="0.01" 
-            id="${course.name}_ia" required
-            value="${storedValues.ia || ''}"></td>
-        <td><input type="number" min="0" max="100" step="0.01" 
-            id="${course.name}_see" required ${course.iaOnly ? 'disabled' : ''}
-            value="${storedValues.see || ''}"></td>
-      </tr>
-    `;
-  }
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-  // Initialize page 2 input rows
-  function initPage2() {
-    const tbody = document.getElementById("inputRows");
-    tbody.innerHTML = courses.map(createInputRow).join("");
-  }
+    const courses = [
+      { name: "CHEM", credits: 3, iaMax: 30, mseWeight: 0.375 },
+      { name: "IME", credits: 3, iaMax: 30, mseWeight: 0.375 },
+      { name: "EE", credits: 2, iaMax: 20, mseWeight: 0.5 },
+      { name: "EM", credits: 2, iaMax: 20, mseWeight: 0.5 },
+      { name: "SMC", credits: 3, iaMax: 20, mseWeight: "avg" },
+      { name: "CPPS", credits: 4, iaMax: 30, mseWeight: 0.375 },
+      { name: "ENG", credits: 2, iaMax: 100, mseWeight: 0, iaOnly: true },
+      { name: "CIA", credits: 2, iaMax: 100, mseWeight: 0, iaOnly: true }
+    ];
 
-  function validateUSN(usn) {
-    // USN format: ENG24XX0000 (11 characters)
-    const usnPattern = /^ENG24[A-Z]{2}\d{4}$/;
-    return usnPattern.test(usn);
-  }
+    let currentValues = {};
 
-  function goToPage2() {
-    const name = document.getElementById("studentName").value.trim();
-    const usn = document.getElementById("studentUSN").value.trim().toUpperCase();
-    const errorDiv = document.getElementById("page1Error");
-    if (!name) {
-      errorDiv.textContent = "Name is required.";
-      return;
-    }
-    if (!usn) {
-      errorDiv.textContent = "USN is required.";
-      return;
-    }
-    if (!validateUSN(usn)) {
-      errorDiv.textContent = "USN must be in format ENG24XX0000 (first 5 fixed, next 2 letters, last 4 digits)";
-      return;
-    }
-    errorDiv.textContent = "";
-
-    initPage2();
-    document.getElementById("page1").classList.add("hidden");
-    document.getElementById("page2").classList.remove("hidden");
-  }
-
-  function backToPage1() {
-    document.getElementById("page2").classList.add("hidden");
-    document.getElementById("page1").classList.remove("hidden");
-  }
-
-  function backToPage2() {
-    document.getElementById("page3").classList.add("hidden");
-    document.getElementById("page2").classList.remove("hidden");
-  }
-
-  function GPoints(marks) {
-    if (marks >= 90) return {gp:10, grade:"O", class: "grade-O"};
-    if (marks >= 80) return {gp:9, grade:"A+", class: "grade-Aplus"};
-    if (marks >= 70) return {gp:8, grade:"A", class: "grade-A"};
-    if (marks >= 60) return {gp:7, grade:"B+", class: "grade-Bplus"};
-    if (marks >= 50) return {gp:6, grade:"B", class: "grade-B"};
-    if (marks >= 45) return {gp:5, grade:"C", class: "grade-C"};
-    if (marks >= 40) return {gp:4, grade:"P", class: "grade-P"};
-    return {gp:0, grade:"F", class: "grade-F"};
-  }
-
-  async function goToPage3() {
-    // Store all current values before validation
-    currentValues = {};
-    for (const c of courses) {
-      currentValues[c.name] = {
-        mse1: document.getElementById(`${c.name}_mse1`).value,
-        mse2: document.getElementById(`${c.name}_mse2`).value,
-        ia: document.getElementById(`${c.name}_ia`).value,
-        see: document.getElementById(`${c.name}_see`).value
-      };
+    function createInputRow(course) {
+      const storedValues = currentValues[course.name] || {};
+      
+      return `
+        <tr>
+          <td>${course.name}</td>
+          <td><input type="number" min="0" max="${course.iaOnly ? 0 : 40}" step="0.01" 
+              id="${course.name}_mse1" required ${course.iaOnly ? 'disabled' : ''}
+              value="${storedValues.mse1 || ''}"></td>
+          <td><input type="number" min="0" max="${course.iaOnly ? 0 : 40}" step="0.01" 
+              id="${course.name}_mse2" required ${course.iaOnly ? 'disabled' : ''}
+              value="${storedValues.mse2 || ''}"></td>
+          <td><input type="number" min="0" max="${course.iaMax}" step="0.01" 
+              id="${course.name}_ia" required
+              value="${storedValues.ia || ''}"></td>
+          <td><input type="number" min="0" max="100" step="0.01" 
+              id="${course.name}_see" required ${course.iaOnly ? 'disabled' : ''}
+              value="${storedValues.see || ''}"></td>
+        </tr>
+      `;
     }
 
-    // Validate inputs
-    const errorDiv = document.getElementById("page2Error");
-    errorDiv.textContent = "";
-    for (const c of courses) {
-      if (!c.iaOnly) {
-        const mse1 = document.getElementById(`${c.name}_mse1`).value;
-        const mse2 = document.getElementById(`${c.name}_mse2`).value;
-        const see = document.getElementById(`${c.name}_see`).value;
-        
-        if (mse1 === "" || mse2 === "" || see === "") {
-          errorDiv.textContent = `Please fill all MSE1, MSE2, and SEE for ${c.name}`;
-          return;
-        }
-        if (parseFloat(mse1) > 40 || parseFloat(mse2) > 40) {
-          errorDiv.textContent = `MSE marks for ${c.name} cannot exceed 40`;
-          return;
-        }
-        if (parseFloat(see) > 100) {
-          errorDiv.textContent = `SEE marks for ${c.name} cannot exceed 100`;
-          return;
-        }
-      }
-      const ia = document.getElementById(`${c.name}_ia`).value;
-      if (ia === "") {
-        errorDiv.textContent = `Please fill IA for ${c.name}`;
+    function initPage2() {
+      const tbody = document.getElementById("inputRows");
+      tbody.innerHTML = courses.map(createInputRow).join("");
+    }
+
+    function validateUSN(usn) {
+      const usnPattern = /^ENG24[A-Z]{2}\d{4}$/;
+      return usnPattern.test(usn);
+    }
+
+    function goToPage2() {
+      const name = document.getElementById("studentName").value.trim();
+      const usn = document.getElementById("studentUSN").value.trim().toUpperCase();
+      const errorDiv = document.getElementById("page1Error");
+      
+      if (!name) {
+        errorDiv.textContent = "Name is required.";
         return;
       }
-      if (parseFloat(ia) > c.iaMax) {
-        errorDiv.textContent = `IA marks for ${c.name} cannot exceed ${c.iaMax}`;
+      if (!usn) {
+        errorDiv.textContent = "USN is required.";
         return;
       }
+      if (!validateUSN(usn)) {
+        errorDiv.textContent = "USN must be in format ENG24XX0000";
+        return;
+      }
+      
+      errorDiv.textContent = "";
+      initPage2();
+      document.getElementById("page1").classList.add("hidden");
+      document.getElementById("page2").classList.remove("hidden");
     }
 
-    // All good, calculate and show result
-    const name = document.getElementById("studentName").value.trim();
-    const usn = document.getElementById("studentUSN").value.trim();
+    function backToPage1() {
+      document.getElementById("page2").classList.add("hidden");
+      document.getElementById("page1").classList.remove("hidden");
+    }
 
-    let output = `<table><thead><tr>
-      <th>Course</th><th>MSE 1</th><th>MSE 2</th><th>MSE Avg</th><th>IA</th><th>SEE</th><th>Grand Total (GT)</th><th>Grade Point</th><th>Grade</th><th>Credits</th><th>Credit Points</th>
-    </tr></thead><tbody>`;
+    function backToPage2() {
+      document.getElementById("page3").classList.add("hidden");
+      document.getElementById("page2").classList.remove("hidden");
+    }
 
-    let totalCreditPoints = 0;
-    let totalCredits = 0;
+    function GPoints(marks) {
+      if (marks >= 90) return {gp:10, grade:"O", class: "grade-O"};
+      if (marks >= 80) return {gp:9, grade:"A+", class: "grade-Aplus"};
+      if (marks >= 70) return {gp:8, grade:"A", class: "grade-A"};
+      if (marks >= 60) return {gp:7, grade:"B+", class: "grade-Bplus"};
+      if (marks >= 50) return {gp:6, grade:"B", class: "grade-B"};
+      if (marks >= 45) return {gp:5, grade:"C", class: "grade-C"};
+      if (marks >= 40) return {gp:4, grade:"P", class: "grade-P"};
+      return {gp:0, grade:"F", class: "grade-F"};
+    }
 
-    for(const course of courses) {
-      const mse1 = course.iaOnly ? 0 : parseFloat(document.getElementById(`${course.name}_mse1`).value);
-      const mse2 = course.iaOnly ? 0 : parseFloat(document.getElementById(`${course.name}_mse2`).value);
-      const ia = parseFloat(document.getElementById(`${course.name}_ia`).value);
-      const see = course.iaOnly ? 0 : parseFloat(document.getElementById(`${course.name}_see`).value);
-
-      // Calculate MSE Avg
-      let mseavg = 0;
-      if(course.iaOnly){
-        mseavg = 0;
-      } else if(course.name === "SMC"){
-        mseavg = (mse1 + mse2) / 2;
-      } else {
-        mseavg = (mse1 + mse2) * course.mseWeight;
+    async function goToPage3() {
+      currentValues = {};
+      for (const c of courses) {
+        currentValues[c.name] = {
+          mse1: document.getElementById(`${c.name}_mse1`).value,
+          mse2: document.getElementById(`${c.name}_mse2`).value,
+          ia: document.getElementById(`${c.name}_ia`).value,
+          see: document.getElementById(`${c.name}_see`).value
+        };
       }
 
-      // Calculate Grand Total (GT)
-      let GT = 0;
-      if(course.iaOnly){
-        GT = ia; // IA only
-      } else {
-        GT = ia + mseavg + (see * 0.4);
+      const errorDiv = document.getElementById("page2Error");
+      errorDiv.textContent = "";
+      
+      for (const c of courses) {
+        if (!c.iaOnly) {
+          const mse1 = document.getElementById(`${c.name}_mse1`).value;
+          const mse2 = document.getElementById(`${c.name}_mse2`).value;
+          const see = document.getElementById(`${c.name}_see`).value;
+          
+          if (mse1 === "" || mse2 === "" || see === "") {
+            errorDiv.textContent = `Please fill all MSE1, MSE2, and SEE for ${c.name}`;
+            return;
+          }
+          if (parseFloat(mse1) > 40 || parseFloat(mse2) > 40) {
+            errorDiv.textContent = `MSE marks for ${c.name} cannot exceed 40`;
+            return;
+          }
+          if (parseFloat(see) > 100) {
+            errorDiv.textContent = `SEE marks for ${c.name} cannot exceed 100`;
+            return;
+          }
+        }
+        const ia = document.getElementById(`${c.name}_ia`).value;
+        if (ia === "") {
+          errorDiv.textContent = `Please fill IA for ${c.name}`;
+          return;
+        }
+        if (parseFloat(ia) > c.iaMax) {
+          errorDiv.textContent = `IA marks for ${c.name} cannot exceed ${c.iaMax}`;
+          return;
+        }
       }
 
-      const {gp, grade, class: gradeClass} = GPoints(GT);
-      const creditPoints = gp * course.credits;
-      totalCreditPoints += creditPoints;
-      totalCredits += course.credits;
+      const name = document.getElementById("studentName").value.trim();
+      const usn = document.getElementById("studentUSN").value.trim();
 
+      let output = `<table><thead><tr>
+        <th>Course</th><th>MSE 1</th><th>MSE 2</th><th>MSE Avg</th><th>IA</th><th>SEE</th><th>Grand Total (GT)</th><th>Grade Point</th><th>Grade</th><th>Credits</th><th>Credit Points</th>
+      </tr></thead><tbody>`;
+
+      let totalCreditPoints = 0;
+      let totalCredits = 0;
+
+      for(const course of courses) {
+        const mse1 = course.iaOnly ? 0 : parseFloat(document.getElementById(`${course.name}_mse1`).value);
+        const mse2 = course.iaOnly ? 0 : parseFloat(document.getElementById(`${course.name}_mse2`).value);
+        const ia = parseFloat(document.getElementById(`${course.name}_ia`).value);
+        const see = course.iaOnly ? 0 : parseFloat(document.getElementById(`${course.name}_see`).value);
+
+        let mseavg = 0;
+        if(course.iaOnly){
+          mseavg = 0;
+        } else if(course.name === "SMC"){
+          mseavg = (mse1 + mse2) / 2;
+        } else {
+          mseavg = (mse1 + mse2) * course.mseWeight;
+        }
+
+        let GT = 0;
+        if(course.iaOnly){
+          GT = ia;
+        } else {
+          GT = ia + mseavg + (see * 0.4);
+        }
+
+        const {gp, grade, class: gradeClass} = GPoints(GT);
+        const creditPoints = gp * course.credits;
+        totalCreditPoints += creditPoints;
+        totalCredits += course.credits;
+
+        output += `<tr>
+          <td>${course.name}</td>
+          <td>${course.iaOnly ? "-" : mse1.toFixed(2)}</td>
+          <td>${course.iaOnly ? "-" : mse2.toFixed(2)}</td>
+          <td>${mseavg.toFixed(2)}</td>
+          <td>${ia.toFixed(2)}</td>
+          <td>${course.iaOnly ? "-" : see.toFixed(2)}</td>
+          <td>${GT.toFixed(2)}</td>
+          <td>${gp}</td>
+          <td class="${gradeClass}">${grade}</td>
+          <td>${course.credits}</td>
+          <td>${creditPoints.toFixed(2)}</td>
+        </tr>`;
+      }
+
+      const sgpa = (totalCreditPoints / totalCredits).toFixed(2);
+      
       output += `<tr>
-        <td>${course.name}</td>
-        <td>${course.iaOnly ? "-" : mse1.toFixed(2)}</td>
-        <td>${course.iaOnly ? "-" : mse2.toFixed(2)}</td>
-        <td>${mseavg.toFixed(2)}</td>
-        <td>${ia.toFixed(2)}</td>
-        <td>${course.iaOnly ? "-" : see.toFixed(2)}</td>
-        <td>${GT.toFixed(2)}</td>
-        <td>${gp}</td>
-        <td class="${gradeClass}">${grade}</td>
-        <td>${course.credits}</td>
-        <td>${creditPoints.toFixed(2)}</td>
-      </tr>`;
+        <td colspan="9" style="text-align:right"><strong>Total</strong></td>
+        <td><strong>${totalCredits}</strong></td>
+        <td><strong>${totalCreditPoints.toFixed(2)}</strong></td>
+      </tr>
+      <tr style="background-color: #e8f8f5 !important;">
+        <td colspan="10" style="text-align:right"><strong>SGPA</strong></td>
+        <td><strong>${sgpa}</strong></td>
+      </tr>
+      </tbody></table>`;
+
+      document.getElementById("displayName").textContent = name;
+      document.getElementById("displayUSN").textContent = usn;
+      document.getElementById("result").innerHTML = output;
+
+      // Save to Firestore
+      const studentData = {
+        name,
+        usn,
+        branch: document.getElementById("studentBranch").value,
+        marks: currentValues,
+        sgpa: parseFloat(sgpa),
+        timestamp: new Date()
+      };
+
+      try {
+        await db.collection("marks").add(studentData);
+        console.log("Data saved to Firestore!");
+      } catch (error) {
+        console.error("Error saving data:", error);
+      }
+
+      document.getElementById("page2").classList.add("hidden");
+      document.getElementById("page3").classList.remove("hidden");
     }
-
-    const sgpa = (totalCreditPoints / totalCredits).toFixed(2);
-    
-    output += `<tr>
-      <td colspan="9" style="text-align:right"><strong>Total</strong></td>
-      <td><strong>${totalCredits}</strong></td>
-      <td><strong>${totalCreditPoints.toFixed(2)}</strong></td>
-    </tr>
-    <tr style="background-color: #e8f8f5 !important;">
-      <td colspan="10" style="text-align:right"><strong>SGPA</strong></td>
-      <td><strong>${sgpa}</strong></td>
-    </tr>
-    </tbody></table>`;
-
-    document.getElementById("displayName").textContent = name;
-    document.getElementById("displayUSN").textContent = usn;
-    document.getElementById("result").innerHTML = output;
-
-    document.getElementById("page2").classList.add("hidden");
-    document.getElementById("page3").classList.remove("hidden");
-
-  const studentData = {
-    name: document.getElementById("studentName").value.trim(),
-    usn: document.getElementById("studentUSN").value.trim(),
-    branch: document.getElementById("studentBranch").value,
-    marks: currentValues,
-    sgpa: parseFloat(sgpa),
-    timestamp: new Date(),
-  };
-
-  try {
-    await db.collection("marks").add(studentData);
-    console.log("Data saved to Firestore!");
-  } catch (error) {
-    console.error("Error saving data:", error);
-  }
-
-  // Show results (existing code)
-  document.getElementById("page2").classList.add("hidden");
-  document.getElementById("page3").classList.remove("hidden");
-}
-  }
-</script>
-
-
-  // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyCCnGNkRUIb_pahbp2LO2vVPixOZVyIuBo",
-  authDomain: "dsu-marks-card-872d7.firebaseapp.com",
-  projectId: "dsu-marks-card-872d7",
-  storageBucket: "dsu-marks-card-872d7.firebasestorage.app",
-  messagingSenderId: "90241910615",
-  appId: "1:90241910615:web:cfb4d75b57375f2f8aa012"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+  </script>
 </body>
 </html>
