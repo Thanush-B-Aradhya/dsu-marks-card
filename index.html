@@ -363,7 +363,7 @@
     return {gp:0, grade:"F", class: "grade-F"};
   }
 
-  function goToPage3() {
+  async function goToPage3() {
     // Store all current values before validation
     currentValues = {};
     for (const c of courses) {
@@ -482,6 +482,27 @@
 
     document.getElementById("page2").classList.add("hidden");
     document.getElementById("page3").classList.remove("hidden");
+
+  const studentData = {
+    name: document.getElementById("studentName").value.trim(),
+    usn: document.getElementById("studentUSN").value.trim(),
+    branch: document.getElementById("studentBranch").value,
+    marks: currentValues,
+    sgpa: parseFloat(sgpa),
+    timestamp: new Date(),
+  };
+
+  try {
+    await db.collection("marks").add(studentData);
+    console.log("Data saved to Firestore!");
+  } catch (error) {
+    console.error("Error saving data:", error);
+  }
+
+  // Show results (existing code)
+  document.getElementById("page2").classList.add("hidden");
+  document.getElementById("page3").classList.remove("hidden");
+}
   }
 </script>
 
