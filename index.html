@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DSU Marks Card - Web View</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DSU Marks Card Flow</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,6 +11,7 @@
       max-width: 900px;
       margin: auto;
     }
+    .hidden { display: none; }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -26,35 +27,181 @@
     th {
       background-color: #f2f2f2;
     }
+    input[type="text"], input[type="number"] {
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
-  <h2>DSU Marks Card - Web View</h2>
+  <div id="page1">
+    <h2>Enter Student Details</h2>
+    <label>Name: <input type="text" id="studentName"></label><br><br>
+    <label>USN: <input type="text" id="usn"></label><br><br>
+    <button onclick="goToPage2()">Next</button>
+  </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Sl. No.</th>
-        <th>Course Title</th>
-        <th>Credit</th>
-        <th>Grade</th>
-        <th>Grade Point</th>
-        <th>Credit Points</th>
-        <th>GT</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>1</td><td>ENGINEERING CHEMISTRY</td><td>3</td><td>B+</td><td>7</td><td>21.0</td><td>60.8</td></tr>
-      <tr><td>2</td><td>MECHANICAL ENGINEERING</td><td>3</td><td>A</td><td>8</td><td>24.0</td><td>70.9</td></tr>
-      <tr><td>3</td><td>ELECTRICAL ENGINEERING</td><td>2</td><td>A</td><td>8</td><td>16.0</td><td>73.0</td></tr>
-      <tr><td>4</td><td>ENGINEERING MECHANICS</td><td>2</td><td>C</td><td>5</td><td>10.0</td><td>50.4</td></tr>
-      <tr><td>5</td><td>SM CALCULUS</td><td>3</td><td>A</td><td>8</td><td>24.0</td><td>70.8</td></tr>
-      <tr><td>6</td><td>C PROGRAMMING</td><td>4</td><td>O</td><td>10</td><td>40.0</td><td>85.8</td></tr>
-      <tr><td>7</td><td>ENGLISH</td><td>2</td><td>O</td><td>10</td><td>20.0</td><td>100</td></tr>
-      <tr><td>8</td><td>CIA</td><td>2</td><td>A+</td><td>9</td><td>18.0</td><td>95</td></tr>
-      <tr><td></td><td><strong>TOTAL</strong></td><td>21</td><td></td><td></td><td>173.0</td><td></td></tr>
-      <tr><td></td><td><strong>SGPA</strong></td><td></td><td></td><td></td><td>8.24</td><td></td></tr>
-    </tbody>
-  </table>
+  <div id="page2" class="hidden">
+    <h2>Enter Marks</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Course</th>
+          <th>MSE1</th>
+          <th>MSE2</th>
+          <th>IA</th>
+          <th>SEE</th>
+        </tr>
+      </thead>
+      <tbody id="marksTable">
+        <tr data-course="ENGINEERING CHEMISTRY" data-credit="3">
+          <td>ENGINEERING CHEMISTRY</td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+        </tr>
+        <tr data-course="MECHANICAL ENGINEERING" data-credit="3">
+          <td>MECHANICAL ENGINEERING</td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+        </tr>
+        <tr data-course="ELECTRICAL ENGINEERING" data-credit="2">
+          <td>ELECTRICAL ENGINEERING</td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+        </tr>
+        <tr data-course="ENGINEERING MECHANICS" data-credit="2">
+          <td>ENGINEERING MECHANICS</td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+        </tr>
+        <tr data-course="SM CALCULUS" data-credit="3">
+          <td>SM CALCULUS</td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+        </tr>
+        <tr data-course="C PROGRAMMING" data-credit="4">
+          <td>C PROGRAMMING</td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+        </tr>
+        <tr data-course="ENGLISH" data-credit="2">
+          <td>ENGLISH</td>
+          <td>-</td>
+          <td>-</td>
+          <td><input type="number"></td>
+          <td>-</td>
+        </tr>
+        <tr data-course="CIA" data-credit="2">
+          <td>CIA</td>
+          <td>-</td>
+          <td>-</td>
+          <td><input type="number"></td>
+          <td>-</td>
+        </tr>
+      </tbody>
+    </table>
+    <button onclick="generateTable()">Submit</button>
+  </div>
+
+  <div id="page3" class="hidden">
+    <h2>DSU Marks Card - Web View</h2>
+    <p><strong>Name:</strong> <span id="outName"></span> &nbsp;&nbsp; <strong>USN:</strong> <span id="outUSN"></span></p>
+    <table id="outputTable">
+      <thead>
+        <tr>
+          <th>Sl. No.</th>
+          <th>Course Title</th>
+          <th>Credit</th>
+          <th>Grade</th>
+          <th>Grade Point</th>
+          <th>Credit Points</th>
+          <th>GT</th>
+        </tr>
+      </thead>
+      <tbody id="resultBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    function goToPage2() {
+      const name = document.getElementById("studentName").value.trim();
+      const usn = document.getElementById("usn").value.trim();
+      if (!name || !usn) return alert("Please enter both Name and USN");
+      document.getElementById("page1").classList.add("hidden");
+      document.getElementById("page2").classList.remove("hidden");
+    }
+
+    function getGrade(gt) {
+      if (gt >= 90) return [10, "O"];
+      if (gt >= 80) return [9, "A+"];
+      if (gt >= 70) return [8, "A"];
+      if (gt >= 60) return [7, "B+"];
+      if (gt >= 50) return [6, "B"];
+      if (gt >= 45) return [5, "C"];
+      if (gt >= 40) return [4, "P"];
+      return [0, "F"];
+    }
+
+    function generateTable() {
+      document.getElementById("page2").classList.add("hidden");
+      document.getElementById("page3").classList.remove("hidden");
+
+      const rows = document.querySelectorAll("#marksTable tr");
+      const tbody = document.getElementById("resultBody");
+      tbody.innerHTML = "";
+
+      let totalCredits = 0, totalPoints = 0;
+      let sl = 1;
+
+      rows.forEach(row => {
+        const title = row.getAttribute("data-course");
+        const credit = parseInt(row.getAttribute("data-credit"));
+        const inputs = row.querySelectorAll("input");
+
+        let gt = 0;
+        if (title === "ENGLISH" || title === "CIA") {
+          gt = parseFloat(inputs[0].value || 0);
+        } else {
+          const m1 = parseFloat(inputs[0].value || 0);
+          const m2 = parseFloat(inputs[1].value || 0);
+          const ia = parseFloat(inputs[2].value || 0);
+          const see = parseFloat(inputs[3].value || 0);
+          gt = parseFloat((((m1 + m2) / 2) * 0.4 + ia + (see * 0.4)).toFixed(1));
+        }
+
+        const [gp, grade] = getGrade(gt);
+        const cp = gp * credit;
+
+        totalCredits += credit;
+        totalPoints += cp;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${sl++}</td><td>${title}</td><td>${credit}</td><td>${grade}</td><td>${gp}</td><td>${cp.toFixed(1)}</td><td>${gt}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      const totalRow = document.createElement("tr");
+      totalRow.innerHTML = `<td></td><td><strong>TOTAL</strong></td><td>${totalCredits}</td><td></td><td></td><td>${totalPoints.toFixed(1)}</td><td></td>`;
+      tbody.appendChild(totalRow);
+
+      const sgpaRow = document.createElement("tr");
+      sgpaRow.innerHTML = `<td></td><td><strong>SGPA</strong></td><td></td><td></td><td></td><td>${(totalPoints / totalCredits).toFixed(2)}</td><td></td>`;
+      tbody.appendChild(sgpaRow);
+
+      document.getElementById("outName").textContent = document.getElementById("studentName").value;
+      document.getElementById("outUSN").textContent = document.getElementById("usn").value;
+    }
+  </script>
 </body>
 </html>
