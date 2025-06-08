@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - View Submissions</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9f9; }
+    h2 { color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+    th { background: #2c3e50; color: white; }
+    tr:nth-child(even) { background: #f2f2f2; }
+    code { background: #eee; padding: 4px; display: block; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h2>Student Submissions</h2>
+  <div id="output">Loading...</div>
+
+  <script>
+    fetch('/api/fetch-all')
+      .then(res => res.json())
+      .then(data => {
+        if (!Array.isArray(data)) {
+          document.getElementById('output').textContent = "Error loading data.";
+          return;
+        }
+
+        let html = '<table><thead><tr><th>Name</th><th>USN</th><th>Branch</th><th>Marks (JSON)</th></tr></thead><tbody>';
+        for (const row of data) {
+          html += `<tr>
+            <td>${row.name}</td>
+            <td>${row.usn}</td>
+            <td>${row.branch}</td>
+            <td><code>${JSON.stringify(row.marks_json, null, 2)}</code></td>
+          </tr>`;
+        }
+        html += '</tbody></table>';
+        document.getElementById('output').innerHTML = html;
+      });
+  </script>
+</body>
+</html>
