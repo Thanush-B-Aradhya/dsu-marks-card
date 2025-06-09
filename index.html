@@ -353,15 +353,15 @@
   }
 
   function GPoints(marks) {
-    if (marks >= 90) return {gp:10, grade:"O", class: "grade-O"};
-    if (marks >= 80) return {gp:9, grade:"A+", class: "grade-Aplus"};
-    if (marks >= 70) return {gp:8, grade:"A", class: "grade-A"};
-    if (marks >= 60) return {gp:7, grade:"B+", class: "grade-Bplus"};
-    if (marks >= 50) return {gp:6, grade:"B", class: "grade-B"};
-    if (marks >= 45) return {gp:5, grade:"C", class: "grade-C"};
-    if (marks >= 40) return {gp:4, grade:"P", class: "grade-P"};
-    return {gp:0, grade:"F", class: "grade-F"};
-  }
+  if (marks >= 90.1) return {gp:10, grade:"O", class: "grade-O"};
+  if (marks >= 80.1) return {gp:9, grade:"A+", class: "grade-Aplus"};
+  if (marks >= 70.1) return {gp:8, grade:"A", class: "grade-A"};
+  if (marks >= 60.1) return {gp:7, grade:"B+", class: "grade-Bplus"};
+  if (marks >= 55.1) return {gp:6, grade:"B", class: "grade-B"};
+  if (marks >= 50.1) return {gp:5, grade:"C", class: "grade-C"};
+  if (marks >= 40)   return {gp:4, grade:"P", class: "grade-P"};
+  return {gp:0, grade:"F", class: "grade-F"};
+}
 
   function goToPage3() {
     // Store all current values before validation
